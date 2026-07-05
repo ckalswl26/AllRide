@@ -1,0 +1,21 @@
+{% load static %}
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#F34B5C" />
+  <title>오라이 | 초보운전 레벨업 코치</title>
+  <link rel="stylesheet" href="{% static 'api/orai-react/assets/index.css' %}" />
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    window.ORAI_CONFIG = {
+      kakaoJsKey: "{{ KAKAO_JS_KEY|default:''|escapejs }}",
+      displayMode: "{{ display_mode|default:'web'|escapejs }}"
+    };
+  </script>
+  <script type="module" src="{% static 'api/orai-react/assets/index.js' %}"></script>
+</body>
+</html>

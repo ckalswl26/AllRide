@@ -1,0 +1,665 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오라이 웹 | 초보운전 시간 기반 왕복 연습 코스 추천</title>
+  <style>
+    :root {
+      --green: #CDBC50;
+      --pink: #F34B5C;
+      --yellow: #F9B826;
+      --ink: #1f2937;
+      --muted: #667085;
+      --line: #e8e3cf;
+      --bg: #fffdf7;
+      --card: rgba(255,255,255,.88);
+      --shadow: 0 18px 40px rgba(28, 28, 28, 0.10);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background:
+      radial-gradient(circle at top left, rgba(249,184,38,.18), transparent 26%),
+      radial-gradient(circle at top right, rgba(243,75,92,.14), transparent 26%),
+      linear-gradient(180deg, #fffdf8 0%, #fffaf2 100%);
+      color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    .page { min-height: 100vh; padding: 20px; }
+    .shell { display: grid; grid-template-columns: 420px 1fr; gap: 20px; min-height: calc(100vh - 40px); }
+    .panel, .stage { background: var(--card); backdrop-filter: blur(12px); border: 1px solid rgba(205,188,80,.20); box-shadow: var(--shadow); border-radius: 30px; }
+    .panel { padding: 24px; overflow: auto; }
+    .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .brand img { width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(0 12px 20px rgba(0,0,0,.12)); }
+    .brand h1 { margin: 0; font-size: 38px; line-height: 1; color: var(--pink); }
+    .brand h1 span { color: var(--green); }
+    .brand p { margin: 6px 0 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+    .preview-links { display: flex; gap: 10px; margin-bottom: 18px; }
+    .preview-link { flex: 1; padding: 12px 14px; border-radius: 16px; border: 1px solid rgba(243,75,92,.18); background: #fff; text-align: center; font-weight: 700; color: #6b7280; }
+    .preview-link.active { background: linear-gradient(135deg, var(--pink), #ff7b7b); color: white; border-color: transparent; }
+    .section { margin-bottom: 18px; }
+    .label { font-size: 15px; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .select { width: 100%; border: 1px solid rgba(205,188,80,.32); border-radius: 18px; background: white; padding: 15px 16px; font-size: 15px; outline: none; }
+    .chip-grid, .level-grid { display: grid; gap: 10px; }
+    .chip-grid { grid-template-columns: repeat(4,1fr); }
+    .level-grid { grid-template-columns: repeat(3,1fr); }
+    .chip { border: 1px solid rgba(205,188,80,.40); background: white; color: var(--ink); padding: 13px 10px; border-radius: 18px; font-size: 15px; font-weight: 700; cursor: pointer; transition: .18s ease; }
+    .chip.active { background: linear-gradient(135deg, var(--green), #e8dc78); border-color: transparent; color: #384224; box-shadow: 0 10px 18px rgba(205,188,80,.22); }
+    .chip.level.active { background: linear-gradient(135deg, var(--pink), #ff7a6d); color: white; box-shadow: 0 10px 18px rgba(243,75,92,.18); }
+    .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+    .check-item { background: white; border: 1px solid rgba(205,188,80,.25); border-radius: 16px; padding: 12px 14px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .notice { background: rgba(249,184,38,.10); border: 1px solid rgba(249,184,38,.38); color: #7a5800; border-radius: 18px; padding: 14px; font-size: 13px; line-height: 1.65; }
+    .agreement { margin-top: 10px; display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: #495468; }
+    .main-btn { width: 100%; border: 0; border-radius: 18px; padding: 16px; font-size: 16px; font-weight: 800; color: white; cursor: pointer; background: linear-gradient(135deg, var(--pink), var(--yellow)); box-shadow: 0 14px 22px rgba(243,75,92,.18); }
+    .main-btn:disabled { cursor: not-allowed; filter: grayscale(.2); opacity: .55; box-shadow: none; }
+    .policy { display:none; margin-top: 12px; padding: 14px; background: rgba(205,188,80,.14); border: 1px solid rgba(205,188,80,.34); border-radius: 18px; color: #5a6430; font-size: 13px; line-height: 1.6; }
+    .results { margin-top: 14px; }
+    .empty { text-align: center; color: var(--muted); background: rgba(255,255,255,.9); border: 1px dashed rgba(205,188,80,.5); border-radius: 18px; padding: 22px; }
+    .result-card { background: white; border: 1px solid rgba(205,188,80,.20); border-radius: 24px; padding: 18px; margin-top: 14px; box-shadow: 0 10px 18px rgba(0,0,0,.04); }
+    .result-top { display: flex; justify-content: space-between; gap: 12px; }
+    .result-card h3 { margin: 0 0 6px; font-size: 18px; }
+    .subcopy { margin: 0; color: var(--muted); font-size: 13px; }
+    .score-pill { background: linear-gradient(135deg, var(--green), #efe38a); color: #39411f; border-radius: 999px; padding: 10px 12px; font-weight: 800; white-space: nowrap; }
+    .tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .tag { padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .tag.goal { background: rgba(243,75,92,.11); color: var(--pink); }
+    .tag.level { background: rgba(249,184,38,.16); color: #8c6200; }
+    .tag.safe { background: rgba(205,188,80,.15); color: #546112; }
+    .metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 14px; }
+    .metric { background: #fffdf7; border: 1px solid rgba(205,188,80,.18); border-radius: 16px; padding: 12px 8px; text-align: center; }
+    .metric span { display: block; font-size: 11px; color: var(--muted); }
+    .metric b { display: block; margin-top: 4px; font-size: 14px; }
+    .reason { margin-top: 14px; background: rgba(205,188,80,.08); border-radius: 16px; padding: 13px; line-height: 1.65; font-size: 13px; }
+    .card-actions { display: flex; gap: 10px; margin-top: 14px; }
+    .ghost-btn, .accent-btn { flex: 1; border-radius: 16px; padding: 13px 14px; font-weight: 800; cursor: pointer; }
+    .ghost-btn { border: 1px solid rgba(205,188,80,.42); background: #fff; color: #5a6430; }
+    .accent-btn { border: 0; background: linear-gradient(135deg, var(--green), var(--yellow)); color: #3f3c06; }
+    .active-drive { position: sticky; bottom: 12px; margin-top: 16px; display: none; background: linear-gradient(135deg, rgba(243,75,92,.95), rgba(249,184,38,.95)); color: white; border-radius: 24px; padding: 18px; box-shadow: 0 20px 30px rgba(243,75,92,.24); }
+    .active-drive .top { display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+    .active-drive h4 { margin: 0 0 4px; font-size: 17px; }
+    .active-drive p { margin: 0; font-size: 13px; opacity: .96; }
+    .active-actions { display:flex; gap: 10px; margin-top: 14px; }
+    .active-actions button { flex: 1; border: 0; padding: 13px; border-radius: 16px; font-weight: 800; cursor: pointer; }
+    .finish-btn { background: white; color: var(--pink); }
+    .cancel-btn { background: rgba(255,255,255,.22); color: white; }
+    .stage { padding: 18px; display: grid; grid-template-rows: auto 1fr; min-height: calc(100vh - 40px); }
+    .hero { display: grid; grid-template-columns: 1.3fr .8fr; gap: 18px; margin-bottom: 18px; }
+    .hero-card { min-height: 170px; border-radius: 28px; padding: 24px; background: linear-gradient(135deg, rgba(205,188,80,.95), rgba(249,184,38,.96) 50%, rgba(243,75,92,.88)); color: white; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; position: relative; }
+    .hero-card::after { content: ''; position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,.18); }
+    .hero-card h2 { margin: 0; font-size: 31px; line-height: 1.2; }
+    .hero-card p { margin: 8px 0 0; max-width: 520px; font-size: 14px; line-height: 1.7; opacity: .96; }
+    .feature-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .feature { padding: 8px 12px; background: rgba(255,255,255,.18); border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .mascot-card { border-radius: 28px; background: linear-gradient(180deg, #fff 0%, #fff9ea 100%); border: 1px solid rgba(205,188,80,.25); position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .mascot-card img { width: 78%; max-width: 260px; object-fit: contain; }
+    .mascot-badge { position: absolute; top: 18px; left: 18px; border-radius: 999px; background: rgba(255,255,255,.92); color: var(--pink); font-weight: 800; padding: 10px 12px; box-shadow: 0 12px 18px rgba(0,0,0,.08); }
+    .map-panel { position: relative; background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,250,240,.92)); border-radius: 30px; border: 1px solid rgba(205,188,80,.16); overflow: hidden; min-height: 540px; }
+    .map-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid rgba(205,188,80,.20); }
+    .map-toolbar h3 { margin: 0; font-size: 18px; }
+    .map-toolbar p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+    .open-map-btn { border: 0; border-radius: 14px; padding: 12px 14px; background: rgba(205,188,80,.18); color: #526015; font-weight: 800; }
+    #map { width: 100%; height: 600px; background: linear-gradient(180deg, #fcfcfc, #f2f4f8); }
+    .zone-card { position: absolute; z-index: 3; top: 88px; left: 18px; max-width: 360px; border-radius: 22px; background: rgba(255,255,255,.95); border: 1px solid rgba(205,188,80,.22); box-shadow: 0 15px 25px rgba(0,0,0,.08); padding: 16px 18px; }
+    .zone-card .title { font-size: 18px; font-weight: 900; }
+    .zone-card .desc { color: var(--muted); line-height: 1.6; font-size: 13px; margin-top: 6px; }
+    .zone-card .route-hint { margin-top: 10px; display: inline-flex; gap: 8px; align-items: center; background: rgba(243,75,92,.08); color: var(--pink); border-radius: 999px; padding: 8px 12px; font-size: 12px; font-weight: 800; }
+    .map-status { position: absolute; right: 18px; top: 88px; z-index: 3; border-radius: 18px; padding: 14px 16px; background: rgba(255,255,255,.95); border: 1px solid rgba(205,188,80,.20); max-width: 320px; font-size: 13px; color: var(--muted); line-height: 1.55; display:none; }
+    .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,.42); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+    .modal { width: min(520px, 100%); background: white; border-radius: 28px; padding: 24px; box-shadow: 0 28px 40px rgba(0,0,0,.18); }
+    .modal h3 { margin: 0; font-size: 24px; }
+    .modal p { color: var(--muted); line-height: 1.65; font-size: 14px; }
+    .feedback-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; }
+    .feedback-option { border: 1px solid rgba(205,188,80,.30); border-radius: 18px; padding: 16px; background: #fff; text-align: center; cursor: pointer; font-weight: 800; }
+    .feedback-option.active.good { background: rgba(205,188,80,.18); color: #526015; border-color: rgba(205,188,80,.7); }
+    .feedback-option.active.bad { background: rgba(243,75,92,.12); color: var(--pink); border-color: rgba(243,75,92,.42); }
+    .reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .reason-grid label { background: #fffdf7; border: 1px solid rgba(205,188,80,.22); border-radius: 14px; padding: 12px; font-size: 13px; display:flex; gap:8px; align-items:flex-start; }
+    textarea, input[type="number"] { width: 100%; margin-top: 12px; border: 1px solid rgba(205,188,80,.30); border-radius: 16px; padding: 14px; font-family: inherit; resize: vertical; min-height: 50px; }
+    textarea { min-height: 90px; }
+    .modal-actions { display:flex; gap: 10px; margin-top: 16px; }
+    .modal-actions button { flex: 1; border: 0; border-radius: 16px; padding: 14px; font-weight: 800; cursor: pointer; }
+    .close-btn { background: #f5f5f5; color: #4b5563; }
+    .save-btn { background: linear-gradient(135deg, var(--pink), var(--yellow)); color: white; }
+    @media (max-width: 1180px) {
+      .shell { grid-template-columns: 1fr; }
+      .hero { grid-template-columns: 1fr; }
+      .stage { min-height: auto; }
+      #map { height: 480px; }
+    }
+    @media (max-width: 700px) {
+      .page { padding: 10px; }
+      .chip-grid { grid-template-columns: repeat(2,1fr); }
+      .check-list, .metrics, .feedback-options, .reason-grid { grid-template-columns: 1fr; }
+      .card-actions, .active-actions, .modal-actions { flex-direction: column; }
+      .result-top, .map-toolbar { flex-direction: column; align-items: flex-start; }
+      .zone-card, .map-status { position: static; max-width: none; margin: 14px; }
+      .map-panel { padding-top: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="shell">
+      <aside class="panel">
+        <div class="brand">
+          <img src="{% static 'api/orai_character.png' %}" alt="오라이 캐릭터" />
+          <div>
+            <h1>오<span>라이</span></h1>
+            <p>초보운전자를 위한 시간 기반 왕복 연습 코스 추천<br>추천 기준이 보이는 안전한 연습 플랫폼</p>
+          </div>
+        </div>
+
+        <div class="preview-links">
+          <a class="preview-link active" href="/api/courses/recommend/page/">웹 버전</a>
+          <a class="preview-link" href="/api/courses/recommend/app/">앱 버전</a>
+        </div>
+
+        <div class="section">
+          <div class="label">📍 출발 오라이존</div>
+          <select id="zone" class="select"></select>
+        </div>
+
+        <div class="section">
+          <div class="label">🕐 연습 가능 시간</div>
+          <div id="timeChips" class="chip-grid">
+            <button class="chip" data-value="15">15분</button>
+            <button class="chip active" data-value="30">30분</button>
+            <button class="chip" data-value="45">45분</button>
+            <button class="chip" data-value="60">60분</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="label">🎯 오늘 연습 목표</div>
+          <select id="practiceType" class="select">
+            <option value="beginner">처음 운전</option>
+            <option value="lane_keep">차선 유지</option>
+            <option value="right_turn" selected>우회전</option>
+            <option value="left_turn">좌회전</option>
+            <option value="u_turn">유턴</option>
+            <option value="lane_change">차선 변경</option>
+            <option value="parking">주차장 진입</option>
+          </select>
+        </div>
+
+        <div class="section">
+          <div class="label">📈 연습 단계</div>
+          <div id="levelChips" class="level-grid">
+            <button class="chip level active" data-value="beginner">입문</button>
+            <button class="chip level" data-value="adapt">적응</button>
+            <button class="chip level" data-value="challenge">도전</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="label">🚫 피하고 싶은 요소</div>
+          <div class="check-list">
+            <label class="check-item"><input type="checkbox" value="u_turn"> 유턴</label>
+            <label class="check-item"><input type="checkbox" value="lane_change"> 차선 변경</label>
+            <label class="check-item"><input type="checkbox" value="school_zone"> 어린이보호구역</label>
+            <label class="check-item"><input type="checkbox" value="accident_hotspot"> 사고 다발 구간</label>
+            <label class="check-item"><input type="checkbox" value="complex_intersection"> 복잡한 교차로</label>
+            <label class="check-item"><input type="checkbox" value="speed_bump"> 방지턱</label>
+          </div>
+        </div>
+
+        <div class="notice">
+          추천 경로와 예상 시간은 참고 정보입니다. 실제 도로 상황, 사고, 공사, 날씨, 운전 속도에 따라 달라질 수 있어요.<br>
+          운전 중에는 현장 교통 상황과 안전 판단을 우선해 주세요.
+        </div>
+        <label class="agreement"><input id="agree" type="checkbox"> 안내 내용을 확인했습니다.</label>
+        <button id="recommendBtn" class="main-btn" disabled>🚗 추천 코스 보기</button>
+        <div id="policy" class="policy"></div>
+        <div id="results" class="results"></div>
+        <div id="activeDrive" class="active-drive">
+          <div class="top">
+            <div>
+              <h4 id="driveTitle">주행 중인 코스</h4>
+              <p id="driveMeta">추천 코스를 선택하면 여기에 현재 주행 상태가 표시됩니다.</p>
+            </div>
+            <span>🚘</span>
+          </div>
+          <div class="active-actions">
+            <button class="finish-btn" id="finishDriveBtn">주행 종료하기</button>
+            <button class="cancel-btn" id="cancelDriveBtn">다른 코스 보기</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="stage">
+        <div class="hero">
+          <div class="hero-card">
+            <div>
+              <h2>빠른 길보다<br>초보에게 맞는 길</h2>
+              <p>오라이는 시간, 연습 목표, 부담 요소를 함께 고려해 출발지로 안전하게 돌아오는 왕복 연습 코스를 추천해요. 카카오맵으로 코스를 확인하고 실제 연습이 끝난 뒤에만 후기를 남길 수 있습니다.</p>
+            </div>
+            <div class="feature-row">
+              <span class="feature">왕복 연습 코스</span>
+              <span class="feature">오라이존 기반 추천</span>
+              <span class="feature">연습 종료 후 후기</span>
+            </div>
+          </div>
+          <div class="mascot-card">
+            <div class="mascot-badge">오라이 캐릭터</div>
+            <img src="{% static 'api/orai_character.png' %}" alt="오라이 캐릭터" />
+          </div>
+        </div>
+
+        <div class="map-panel">
+          <div class="map-toolbar">
+            <div>
+              <h3>카카오맵 실시간 코스 미리보기</h3>
+              <p>선택한 오라이존과 추천 코스를 지도에서 확인하세요.</p>
+            </div>
+            <button id="openKakaoLink" class="open-map-btn" type="button">카카오맵에서 열기</button>
+          </div>
+          <div id="zoneCard" class="zone-card">
+            <div class="title">오라이존을 불러오는 중입니다.</div>
+            <div class="desc">잠시만 기다려 주세요.</div>
+          </div>
+          <div id="mapStatus" class="map-status"></div>
+          <div id="map"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="feedbackModal" class="modal-wrap">
+    <div class="modal">
+      <h3>오늘 연습은 어땠나요?</h3>
+      <p id="feedbackTarget">주행이 끝난 뒤에만 후기를 남길 수 있어요. 다음 추천을 더 잘하기 위해 의견을 들려주세요.</p>
+      <div class="feedback-options">
+        <button class="feedback-option good" data-verdict="good">👍 좋았어요</button>
+        <button class="feedback-option bad" data-verdict="bad">👎 어려웠어요</button>
+      </div>
+      <div id="badReasonBox" style="display:none;">
+        <div class="label" style="margin-bottom:10px;">어떤 점이 어려웠나요?</div>
+        <div class="reason-grid">
+          <label><input type="checkbox" value="교차로"> 교차로가 복잡했어요</label>
+          <label><input type="checkbox" value="차선 변경"> 차선 변경이 어려웠어요</label>
+          <label><input type="checkbox" value="교통량"> 교통량이 많았어요</label>
+          <label><input type="checkbox" value="유턴"> 유턴이 부담됐어요</label>
+          <label><input type="checkbox" value="주차장 진입"> 주차장 진입이 어려웠어요</label>
+          <label><input type="checkbox" value="예상보다 오래 걸림"> 예상보다 오래 걸렸어요</label>
+        </div>
+      </div>
+      <input id="actualMinutes" type="number" min="1" placeholder="실제 주행 시간(분)을 입력해 주세요" />
+      <textarea id="feedbackMemo" placeholder="추가로 남기고 싶은 의견이 있으면 적어주세요."></textarea>
+      <div class="modal-actions">
+        <button class="close-btn" type="button" id="closeFeedbackBtn">닫기</button>
+        <button class="save-btn" type="button" id="saveFeedbackBtn">후기 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const KAKAO_JS_KEY = "{{ KAKAO_JS_KEY|default:''|escapejs }}";
+    const state = {
+      zones: [],
+      selectedMinutes: 30,
+      selectedLevel: 'beginner',
+      latestCourses: [],
+      activeCourse: null,
+      feedbackVerdict: '',
+      map: null,
+      mapReady: false,
+      markers: [],
+      polyline: null,
+      infoWindow: null,
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function setMapStatus(message, visible = true) {
+      const el = $('mapStatus');
+      el.innerHTML = message;
+      el.style.display = visible ? 'block' : 'none';
+    }
+
+    function clearMapStatus() {
+      setMapStatus('', false);
+    }
+
+    function boot() {
+      bindEvents();
+      bootKakaoMap();
+      loadZones();
+      updateReadyState();
+    }
+
+    function bindEvents() {
+      document.querySelectorAll('#timeChips .chip').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#timeChips .chip').forEach((item) => item.classList.remove('active'));
+          btn.classList.add('active');
+          state.selectedMinutes = Number(btn.dataset.value);
+          updateReadyState();
+        });
+      });
+
+      document.querySelectorAll('#levelChips .chip').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#levelChips .chip').forEach((item) => item.classList.remove('active'));
+          btn.classList.add('active');
+          state.selectedLevel = btn.dataset.value;
+        });
+      });
+
+      $('zone').addEventListener('change', () => {
+        showSelectedZone();
+        updateReadyState();
+      });
+      $('agree').addEventListener('change', updateReadyState);
+      $('recommendBtn').addEventListener('click', recommendCourses);
+      $('openKakaoLink').addEventListener('click', openSelectedZoneInKakaoMap);
+      $('finishDriveBtn').addEventListener('click', openFeedbackModal);
+      $('cancelDriveBtn').addEventListener('click', cancelDrive);
+      $('closeFeedbackBtn').addEventListener('click', closeFeedbackModal);
+      $('saveFeedbackBtn').addEventListener('click', submitFeedback);
+
+      document.querySelectorAll('.feedback-option').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.feedback-option').forEach((item) => item.classList.remove('active'));
+          btn.classList.add('active');
+          state.feedbackVerdict = btn.dataset.verdict;
+          $('badReasonBox').style.display = state.feedbackVerdict === 'bad' ? 'block' : 'none';
+        });
+      });
+    }
+
+    function updateReadyState() {
+      $('recommendBtn').disabled = !(state.selectedMinutes && $('zone').value && $('agree').checked);
+    }
+
+    function bootKakaoMap() {
+      if (!KAKAO_JS_KEY) {
+        setMapStatus('카카오맵 JavaScript 키가 비어 있어요. <br><b>.env</b>의 <b>KAKAO_JS_KEY</b>를 확인해 주세요.');
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false&libraries=services`;
+      script.async = true;
+      script.onload = () => {
+        if (!window.kakao || !kakao.maps) {
+          setMapStatus('카카오맵 SDK를 불러왔지만 지도를 초기화하지 못했어요. 키 권한과 도메인 등록 상태를 확인해 주세요.');
+          return;
+        }
+        kakao.maps.load(() => {
+          initMap();
+          showSelectedZone();
+        });
+      };
+      script.onerror = () => {
+        setMapStatus('카카오맵 스크립트를 불러오지 못했어요. 네트워크 상태 또는 도메인 설정을 확인해 주세요.');
+      };
+      document.head.appendChild(script);
+    }
+
+    function initMap() {
+      try {
+        const mapContainer = $('map');
+        state.map = new kakao.maps.Map(mapContainer, {
+          center: new kakao.maps.LatLng(37.501327, 127.039623),
+          level: 4,
+        });
+        state.infoWindow = new kakao.maps.InfoWindow({ removable: true });
+        state.mapReady = true;
+        clearMapStatus();
+        showSelectedZone();
+      } catch (error) {
+        console.error(error);
+        setMapStatus('카카오맵 초기화 중 오류가 발생했어요. 콘솔 로그와 키 설정을 확인해 주세요.');
+      }
+    }
+
+    async function loadZones() {
+      let response = await fetch('/api/orai-zones/');
+      let data = await response.json();
+      state.zones = data.data || [];
+      if (!state.zones.length) {
+        await fetch('/api/orai-zones/seed/', { method: 'POST' });
+        response = await fetch('/api/orai-zones/');
+        data = await response.json();
+        state.zones = data.data || [];
+      }
+
+      $('zone').innerHTML = state.zones.map((zone) => `<option value="${zone.zone_id}">${zone.zone_name}</option>`).join('');
+      showSelectedZone();
+      updateReadyState();
+    }
+
+    function getSelectedZone() {
+      return state.zones.find((zone) => String(zone.zone_id) === $('zone').value) || null;
+    }
+
+    function showSelectedZone() {
+      const zone = getSelectedZone();
+      if (!zone) return;
+      $('zoneCard').innerHTML = `
+        <div class="title">${zone.zone_name}</div>
+        <div class="desc">${zone.address}<br>${zone.description || ''}</div>
+        <div class="route-hint">🚦 이곳에서 출발해서 다시 돌아오는 왕복 연습 코스</div>
+      `;
+      if (!state.mapReady) return;
+
+      const position = new kakao.maps.LatLng(zone.latitude, zone.longitude);
+      state.map.setCenter(position);
+      state.map.setLevel(4);
+      clearMapObjects();
+      const marker = new kakao.maps.Marker({ map: state.map, position, title: zone.zone_name });
+      state.markers.push(marker);
+      state.infoWindow.setContent(`
+        <div style="padding:12px 14px;min-width:220px;font-size:13px;line-height:1.55;">
+          <b style="font-size:14px;">${zone.zone_name}</b><br>${zone.address}
+        </div>
+      `);
+      state.infoWindow.open(state.map, marker);
+    }
+
+    function clearMapObjects() {
+      state.markers.forEach((marker) => marker.setMap(null));
+      state.markers = [];
+      if (state.polyline) {
+        state.polyline.setMap(null);
+        state.polyline = null;
+      }
+    }
+
+    function openSelectedZoneInKakaoMap() {
+      const zone = getSelectedZone();
+      if (!zone) return;
+      const url = `https://map.kakao.com/link/map/${encodeURIComponent(zone.zone_name)},${zone.latitude},${zone.longitude}`;
+      window.open(url, '_blank');
+    }
+
+    async function recommendCourses() {
+      const payload = {
+        zone_id: Number($('zone').value),
+        minutes: state.selectedMinutes,
+        practice_type: $('practiceType').value,
+        level: state.selectedLevel,
+        avoid: [...document.querySelectorAll('.check-list input:checked')].map((input) => input.value),
+      };
+      $('results').innerHTML = `<div class="empty">오라이가 추천 코스를 계산하고 있어요…</div>`;
+      const response = await fetch('/api/courses/recommend/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      state.latestCourses = data.courses || [];
+      $('policy').style.display = data.policy_message ? 'block' : 'none';
+      $('policy').textContent = data.policy_message || '';
+      renderCourses();
+      if (state.latestCourses.length) {
+        loadRoadPreview(state.latestCourses[0]);
+      }
+    }
+
+    function renderCourses() {
+      if (!state.latestCourses.length) {
+        $('results').innerHTML = `<div class="empty">추천 가능한 코스가 없습니다. 조건을 조금 바꿔 다시 시도해 주세요.</div>`;
+        return;
+      }
+
+      $('results').innerHTML = state.latestCourses.map((course, index) => {
+        return `
+          <div class="result-card">
+            <div class="result-top">
+              <div>
+                <h3>${index + 1}. ${course.course_name}</h3>
+                <p class="subcopy">${course.estimated_range[0]}~${course.estimated_range[1]}분 예상 · 왕복 ${course.distance_km}km</p>
+              </div>
+              <div class="score-pill">추천 ${course.recommend_score}점</div>
+            </div>
+            <div class="tag-row">
+              <span class="tag goal">${course.practice_type_label}</span>
+              <span class="tag level">${course.level_label}</span>
+              <span class="tag safe">부담도 ${course.burden_label}</span>
+            </div>
+            <div class="metrics">
+              <div class="metric"><span>우회전</span><b>${course.metrics.right_turn_count}회</b></div>
+              <div class="metric"><span>좌회전</span><b>${course.metrics.left_turn_count}회</b></div>
+              <div class="metric"><span>유턴</span><b>${course.metrics.u_turn_count}회</b></div>
+              <div class="metric"><span>차선 변경</span><b>${course.metrics.lane_change_count}구간</b></div>
+              <div class="metric"><span>사고 다발</span><b>${course.metrics.accident_hotspot_count}개</b></div>
+              <div class="metric"><span>긍정 후기</span><b>${course.metrics.positive_ratio}%</b></div>
+            </div>
+            <div class="reason">💡 ${course.reason}</div>
+            <div class="card-actions">
+              <button class="ghost-btn" type="button" onclick="previewRouteByIndex(${index})">지도에서 미리보기</button>
+              <button class="accent-btn" type="button" onclick="startDrive(${index})">이 코스로 주행 시작</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function previewRouteByIndex(index) {
+      const course = state.latestCourses[index];
+      if (course) loadRoadPreview(course);
+    }
+
+    async function loadRoadPreview(course) {
+      if (!course) return;
+      if (!state.mapReady) {
+        setMapStatus('카카오맵이 준비되지 않아 경로를 표시할 수 없어요. KAKAO_JS_KEY와 Web 도메인을 확인해 주세요.');
+        return;
+      }
+      setMapStatus('실제 도로 경로를 불러오는 중입니다…');
+      try {
+        const response = await fetch(`/api/courses/${course.course_id}/preview/`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || '경로 요청 실패');
+        previewRoute({ ...course, route_coords: data.route_coords });
+        const sourceLabel = data.source === 'tmap_driving_route'
+          ? 'TMAP 자동차 도로 경로를 표시했어요.'
+          : '실도로 경로를 불러오지 못해 저장된 경유지 연결선으로 표시했어요.';
+        setMapStatus(sourceLabel);
+      } catch (error) {
+        console.error(error);
+        previewRoute(course);
+        setMapStatus('실도로 경로를 불러오지 못해 저장된 경유지 연결선으로 표시했어요.');
+      }
+    }
+
+    function previewRoute(course) {
+      if (!state.mapReady || !course || !Array.isArray(course.route_coords)) return;
+      clearMapObjects();
+      const path = course.route_coords.map((point) => new kakao.maps.LatLng(point.lat, point.lng));
+      state.polyline = new kakao.maps.Polyline({
+        path,
+        strokeWeight: 6,
+        strokeColor: '#F34B5C',
+        strokeOpacity: 0.95,
+        strokeStyle: 'solid',
+      });
+      state.polyline.setMap(state.map);
+      const bounds = new kakao.maps.LatLngBounds();
+
+      course.route_coords.forEach((point, index) => {
+        const position = new kakao.maps.LatLng(point.lat, point.lng);
+        bounds.extend(position);
+        const marker = new kakao.maps.Marker({ map: state.map, position, title: point.name || '경유지' });
+        state.markers.push(marker);
+        const label = index === 0 ? '출발' : (index === course.route_coords.length - 1 ? '복귀' : `경유지 ${index}`);
+        kakao.maps.event.addListener(marker, 'click', () => {
+          state.infoWindow.setContent(`
+            <div style="padding:12px 14px;min-width:180px;font-size:13px;line-height:1.55;">
+              <b>${label}</b><br>${point.name || '경유지'}
+            </div>
+          `);
+          state.infoWindow.open(state.map, marker);
+        });
+      });
+      state.map.setBounds(bounds);
+    }
+
+    function startDrive(index) {
+      const course = state.latestCourses[index];
+      if (!course) return;
+      state.activeCourse = course;
+      $('activeDrive').style.display = 'block';
+      $('driveTitle').textContent = `주행 중 · ${course.course_name}`;
+      $('driveMeta').textContent = `${course.practice_type_label} · ${course.level_label} · 예상 ${course.estimated_range[0]}~${course.estimated_range[1]}분`;
+      loadRoadPreview(course);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function cancelDrive() {
+      state.activeCourse = null;
+      $('activeDrive').style.display = 'none';
+    }
+
+    function openFeedbackModal() {
+      if (!state.activeCourse) return;
+      $('feedbackTarget').textContent = `${state.activeCourse.course_name} 주행이 끝났나요? 후기를 남기면 다음 추천이 더 정확해져요.`;
+      $('feedbackModal').style.display = 'flex';
+    }
+
+    function closeFeedbackModal() {
+      $('feedbackModal').style.display = 'none';
+      state.feedbackVerdict = '';
+      document.querySelectorAll('.feedback-option').forEach((item) => item.classList.remove('active'));
+      document.querySelectorAll('#badReasonBox input').forEach((input) => input.checked = false);
+      $('badReasonBox').style.display = 'none';
+      $('actualMinutes').value = '';
+      $('feedbackMemo').value = '';
+    }
+
+    async function submitFeedback() {
+      if (!state.activeCourse) return;
+      if (!state.feedbackVerdict) {
+        alert('좋았는지 어려웠는지 먼저 선택해 주세요.');
+        return;
+      }
+      const payload = {
+        verdict: state.feedbackVerdict,
+        difficult_reasons: state.feedbackVerdict === 'bad'
+          ? [...document.querySelectorAll('#badReasonBox input:checked')].map((input) => input.value)
+          : [],
+        actual_minutes: $('actualMinutes').value ? Number($('actualMinutes').value) : null,
+        memo: $('feedbackMemo').value,
+      };
+
+      const response = await fetch(`/api/courses/${state.activeCourse.course_id}/feedback/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.message || '후기 저장에 실패했어요.');
+        return;
+      }
+      alert('후기가 저장되었습니다!');
+      closeFeedbackModal();
+      cancelDrive();
+    }
+
+    document.addEventListener('DOMContentLoaded', boot);
+  </script>
+</body>
+</html>
